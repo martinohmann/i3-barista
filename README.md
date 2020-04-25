@@ -1,6 +1,6 @@
 # i3-barista
 
-[![Build Status](https://travis-ci.org/martinohmann/i3-barista.svg?branch=master)](https://travis-ci.org/martinohmann/i3-barista)
+[![Build Status](https://travis-ci.com/martinohmann/i3-barista.svg?branch=master)](https://travis-ci.com/martinohmann/i3-barista)
 [![GoDoc](https://godoc.org/github.com/martinohmann/i3-barista?status.svg)](https://godoc.org/github.com/martinohmann/i3-barista)
 ![GitHub](https://img.shields.io/github/license/martinohmann/i3-barista?color=orange)
 
