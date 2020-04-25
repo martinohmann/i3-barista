@@ -12,11 +12,19 @@ WIP
 
 ## Module installation
 
+If you just want you use the [modules](https://godoc.org/github.com/martinohmann/i3-barista/modules):
+
 ```
 go get -u github.com/martinohmann/i3-barista
 ```
 
-## Bar installation
+## Bar
+
+Screenshot
+
+[![i3-barista](assets/screenshot.png)](assets/screenshot.png)
+
+### Installation
 
 To install the bar, run the following:
 
