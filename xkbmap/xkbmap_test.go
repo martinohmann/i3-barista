@@ -1,8 +1,10 @@
 package xkbmap
 
 import (
-	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestQuery(t *testing.T) {
@@ -23,11 +25,6 @@ layout:     us
 	}
 
 	info, err := Query()
-	if err != nil {
-		t.Errorf("unexpected error: %v", err)
-	}
-
-	if !reflect.DeepEqual(expected, info) {
-		t.Errorf("expected %#v, got %#v", info, expected)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, expected, info)
 }

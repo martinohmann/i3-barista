@@ -5,11 +5,11 @@ import (
 	"github.com/martinohmann/i3-barista/xkbmap"
 )
 
-type provider struct{}
-
 func New(layouts ...string) *keyboard.Module {
 	return keyboard.New(&provider{}, layouts...)
 }
+
+type provider struct{}
 
 func (p *provider) SetLayout(layout string) error {
 	return xkbmap.SetLayout(layout)

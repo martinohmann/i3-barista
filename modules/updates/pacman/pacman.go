@@ -11,7 +11,7 @@ func New() *updates.Module {
 	return updates.New(Provider)
 }
 
-var Provider updates.Provider = updates.ProviderFunc(func() (int, error) {
+var Provider = updates.ProviderFunc(func() (int, error) {
 	out, err := exec.Command("checkupdates").Output()
 	if err != nil {
 		return 0, err

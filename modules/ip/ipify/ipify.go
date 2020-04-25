@@ -14,7 +14,7 @@ func New() *ip.Module {
 	return ip.New(Provider)
 }
 
-var Provider ip.Provider = ip.ProviderFunc(func() (net.IP, error) {
+var Provider = ip.ProviderFunc(func() (net.IP, error) {
 	req, err := http.NewRequest(http.MethodGet, "https://api.ipify.org", nil)
 	if err != nil {
 		return nil, err
