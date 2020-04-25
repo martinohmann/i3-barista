@@ -8,7 +8,7 @@ import (
 	testBar "barista.run/testing/bar"
 )
 
-func TestUpdates(t *testing.T) {
+func TestModule(t *testing.T) {
 	testBar.New(t)
 
 	p := ProviderFunc(func() func() (int, error) {

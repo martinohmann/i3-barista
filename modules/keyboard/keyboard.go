@@ -13,25 +13,44 @@ import (
 	"golang.org/x/time/rate"
 )
 
+// Provider provider the current keyboard layout and is also able to change it.
 type Provider interface {
+	// GetLayout retrieves the name of the currently active keyboard layout.
 	GetLayout() (string, error)
+
+	// SetLayout sets a new keyboard layout.
 	SetLayout(layout string) error
 }
 
+// Controller can switch between keyboard layouts.
 type Controller interface {
+	// Next switches to the next layout in the layout list. This will wrap
+	// around if the last layout is reached.
 	Next()
+
+	// Next switches to the previous layout in the layout list. This will wrap
+	// around if the first layout is reached.
 	Previous()
-	Current() string
+
+	// SetLayout sets a new layout. Layout strings that were not configured on
+	// the module are ignored.
 	SetLayout(layout string)
+
+	// AllLayouts returns all layouts that are configured on the keyboard module
+	// instance that the controller belongs to.
 	AllLayouts() []string
 }
 
+// Layout contains the name of the currently set keyboard layout. It also
+// exposes a Controller to switch between available layouts.
 type Layout struct {
 	Controller
 
+	// Name is the name of the keyboard layout, e.g "us".
 	Name string
 }
 
+// String implements fmt.Stringer.
 func (l Layout) String() string {
 	return l.Name
 }
@@ -77,12 +96,6 @@ func (c *controller) AllLayouts() []string {
 	c.Lock()
 	defer c.Unlock()
 	return c.layouts
-}
-
-func (c *controller) Current() string {
-	c.Lock()
-	defer c.Unlock()
-	return c.layouts[c.current]
 }
 
 func (c *controller) Next() {
@@ -133,6 +146,8 @@ func (c *controller) setLayout() {
 	c.update()
 }
 
+// Module is a module for displaying and interacting with the keyboard layout
+// that is configured by the user.
 type Module struct {
 	controller Controller
 	provider   Provider
@@ -142,6 +157,10 @@ type Module struct {
 	scheduler  *timing.Scheduler
 }
 
+// New creates a new *Module with given keyboard provider. By default, the
+// lists of layouts is cycled through whenever the keyboard layout display in
+// the bar is clicked or scrolled. By default, the module will refresh every 10
+// seconds. The refresh interval can be configured using `Every`.
 func New(provider Provider, layouts ...string) *Module {
 	m := &Module{
 		provider:  provider,
@@ -180,6 +199,7 @@ func defaultClickHandler(l Layout) func(bar.Event) {
 	}
 }
 
+// Stream implements bar.Module.
 func (m *Module) Stream(s bar.Sink) {
 	layout, err := m.provider.GetLayout()
 	outputFunc := m.outputFunc.Get().(func(Layout) bar.Output)
@@ -206,11 +226,14 @@ func (m *Module) Stream(s bar.Sink) {
 	}
 }
 
+// Output updates the output format func.
 func (m *Module) Output(format func(Layout) bar.Output) *Module {
 	m.outputFunc.Set(format)
 	return m
 }
 
+// Every configures the refresh interval for the module. Passing a zero
+// interval will disable refreshing.
 func (m *Module) Every(interval time.Duration) *Module {
 	if interval == 0 {
 		m.scheduler.Stop()
@@ -220,6 +243,7 @@ func (m *Module) Every(interval time.Duration) *Module {
 	return m
 }
 
+// Refresh forces a refresh of the module output.
 func (m *Module) Refresh() {
 	m.notifyFn()
 }
