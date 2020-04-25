@@ -87,6 +87,6 @@ func TestModule(t *testing.T) {
 	testProvider.setIP(net.ParseIP("20.20.20.20"))
 
 	out.At(0).Click(bar.Event{Button: bar.ButtonLeft})
-	out = testBar.NextOutput("next layout")
+	out = testBar.NextOutput("click")
 	out.AssertText([]string{"ip: 20.20.20.20"})
 }

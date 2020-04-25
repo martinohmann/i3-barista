@@ -13,7 +13,7 @@ import (
 	"golang.org/x/time/rate"
 )
 
-// Provider provider the current keyboard layout and is also able to change it.
+// Provider provides the current keyboard layout and is also able to change it.
 type Provider interface {
 	// GetLayout retrieves the name of the currently active keyboard layout.
 	GetLayout() (string, error)
@@ -204,16 +204,14 @@ func (m *Module) Stream(s bar.Sink) {
 	layout, err := m.provider.GetLayout()
 	outputFunc := m.outputFunc.Get().(func(Layout) bar.Output)
 	for {
-		if s.Error(err) {
-			continue
-		}
+		if !s.Error(err) {
+			l := Layout{
+				Name:       layout,
+				Controller: m.controller,
+			}
 
-		l := Layout{
-			Name:       layout,
-			Controller: m.controller,
+			s.Output(outputs.Group(outputFunc(l)).OnClick(defaultClickHandler(l)))
 		}
-
-		s.Output(outputs.Group(outputFunc(l)).OnClick(defaultClickHandler(l)))
 
 		select {
 		case <-m.outputFunc.Next():

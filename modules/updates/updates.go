@@ -59,10 +59,10 @@ func (m *Module) Stream(s bar.Sink) {
 	updates, err := m.provider.Updates()
 	outputFunc := m.outputFunc.Get().(func(int) bar.Output)
 	for {
-		if s.Error(err) {
-			continue
+		if !s.Error(err) {
+			s.Output(outputFunc(updates))
 		}
-		s.Output(outputFunc(updates))
+
 		select {
 		case <-m.outputFunc.Next():
 			outputFunc = m.outputFunc.Get().(func(int) bar.Output)

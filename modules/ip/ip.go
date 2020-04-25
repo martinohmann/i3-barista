@@ -84,7 +84,9 @@ func (m *Module) Stream(s bar.Sink) {
 	outputFunc := m.outputFunc.Get().(func(Info) bar.Output)
 	for {
 		if !s.Error(err) {
-			info := Info{ip}
+			info := Info{
+				IP: ip,
+			}
 
 			s.Output(outputs.Group(outputFunc(info)).OnClick(defaultClickHandler(m)))
 		}
