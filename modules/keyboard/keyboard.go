@@ -7,6 +7,7 @@ import (
 	"barista.run/bar"
 	"barista.run/base/notifier"
 	"barista.run/base/value"
+	l "barista.run/logging"
 	"barista.run/outputs"
 	"barista.run/timing"
 	"golang.org/x/time/rate"
@@ -41,10 +42,10 @@ type controller struct {
 	layouts   []string
 	current   int
 	provider  Provider
-	update    func(string)
+	update    func()
 }
 
-func NewController(provider Provider, layouts []string, updateFn func(string)) Controller {
+func newController(provider Provider, layouts []string, updateFn func()) *controller {
 	c := &controller{
 		layouts:   layouts,
 		layoutMap: make(map[string]int),
@@ -123,11 +124,13 @@ func (c *controller) SetLayout(layout string) {
 
 func (c *controller) setLayout() {
 	current := c.layouts[c.current]
-	c.provider.SetLayout(current)
 
-	if c.update != nil {
-		c.update(current)
+	if err := c.provider.SetLayout(current); err != nil {
+		l.Log("Error setting keyboard layout: %v", err)
+		return
 	}
+
+	c.update()
 }
 
 type Module struct {
@@ -145,7 +148,7 @@ func New(provider Provider, layouts ...string) *Module {
 		scheduler: timing.NewScheduler(),
 	}
 
-	m.controller = NewController(provider, layouts, func(string) {
+	m.controller = newController(provider, layouts, func() {
 		m.Refresh()
 	})
 	m.notifyFn, m.notifyCh = notifier.New()
@@ -186,8 +189,8 @@ func (m *Module) Stream(s bar.Sink) {
 		}
 
 		l := Layout{
-			Controller: m.controller,
 			Name:       layout,
+			Controller: m.controller,
 		}
 
 		s.Output(outputs.Group(outputFunc(l)).OnClick(defaultClickHandler(l)))

@@ -17,7 +17,7 @@ type Info struct {
 	Layout string
 }
 
-var xkbInfoRegexp = regexp.MustCompile("([^:]*?)\\s*:\\s*(.*)$")
+var xkbInfoRegexp = regexp.MustCompile(`([^:]*?)\s*:\s*(.*)$`)
 
 func Query() (Info, error) {
 	raw, err := query()
