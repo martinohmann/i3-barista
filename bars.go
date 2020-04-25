@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"net"
 	"os"
 	"strings"
@@ -24,7 +23,6 @@ import (
 	"barista.run/modules/volume"
 	"barista.run/modules/volume/pulseaudio"
 	"barista.run/modules/weather"
-	"barista.run/modules/weather/openweathermap"
 	"barista.run/modules/wlan"
 	"barista.run/outputs"
 	"github.com/kirsle/configdir"
@@ -38,8 +36,34 @@ import (
 	"github.com/martinohmann/i3-barista/modules/keyboard"
 	"github.com/martinohmann/i3-barista/modules/keyboard/xkbmap"
 	"github.com/martinohmann/i3-barista/modules/updates/pacman"
+	"github.com/martinohmann/i3-barista/modules/weather/openweathermap"
 	"github.com/prometheus/procfs/sysfs"
 )
+
+func init() {
+	colors.LoadFromMap(map[string]string{
+		"default":  "#cccccc",
+		"warning":  "#ffd760",
+		"critical": "#ff5454",
+		"disabled": "#777777",
+		"color0":   "#2e3440",
+		"color1":   "#3b4252",
+		"color2":   "#434c5e",
+		"color3":   "#4c566a",
+		"color4":   "#d8dee9",
+		"color5":   "#e5e9f0",
+		"color6":   "#eceff4",
+		"color7":   "#8fbcbb",
+		"color8":   "#88c0d0",
+		"color9":   "#81a1c1",
+		"color10":  "#5e81ac",
+		"color11":  "#bf616a",
+		"color12":  "#d08770",
+		"color13":  "#ebcb8b",
+		"color14":  "#a3be8c",
+		"color15":  "#b48ead",
+	})
+}
 
 // barFactoryFuncs contains factory functions that populate the module registry
 // for every configured bar.
@@ -61,24 +85,41 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry){
 					}
 
 					out := outputs.Textf(" %d%% %s%s", i.RemainingPct(), sep, format.Duration(i.RemainingTime()))
-					if i.RemainingPct() < 5 {
+
+					switch {
+					case i.RemainingPct() < 5:
 						out = out.Color(colors.Scheme("critical"))
+					case i.RemainingPct() < 10:
+						out = out.Color(colors.Scheme("color11"))
+					case i.RemainingPct() < 15:
+						out = out.Color(colors.Scheme("color12"))
+					case i.RemainingPct() < 20:
+						out = out.Color(colors.Scheme("color13"))
 					}
 
 					return out
 				}),
 				volume.New(pulseaudio.DefaultSink()).Output(func(v volume.Volume) bar.Output {
+					out := outputs.Textf("婢 %d%%", v.Pct())
 					if v.Mute {
-						return outputs.Textf("婢 %d%%", v.Pct()).Color(colors.Scheme("color11"))
+						out = out.Color(colors.Scheme("color11"))
 					}
 
-					return outputs.Textf("墳 %d%%", v.Pct())
+					return out
 				}),
 				cputemp.OfType("acpitz").Output(func(t unit.Temperature) bar.Output {
 					out := outputs.Textf(" %.0f°C", t.Celsius())
-					if t.Celsius() >= 85 {
+					switch {
+					case t.Celsius() > 85:
 						out = out.Color(colors.Scheme("critical"))
+					case t.Celsius() > 80:
+						out = out.Color(colors.Scheme("color11"))
+					case t.Celsius() > 75:
+						out = out.Color(colors.Scheme("color12"))
+					case t.Celsius() > 70:
+						out = out.Color(colors.Scheme("color13"))
 					}
+
 					return out
 				}),
 				pacman.New().Output(func(updates int) bar.Output {
@@ -128,14 +169,14 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry){
 
 				mods := make([]bar.Module, 0)
 
-				defaultIfaceIdx := 0
-				defaultIfacePrefix := "wlp"
+				activeIndex := 0
+				activePrefix := "wlp"
 
 				for i, iface := range ifaces {
 					iface := iface
 
-					if strings.HasPrefix(iface.Name, defaultIfacePrefix) {
-						defaultIfaceIdx = i
+					if strings.HasPrefix(iface.Name, activePrefix) {
+						activeIndex = i
 					}
 
 					mod := netspeed.New(iface.Name).Output(func(s netspeed.Speeds) bar.Output {
@@ -166,7 +207,7 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry){
 					return start, end
 				})
 
-				ctrl.Show(defaultIfaceIdx)
+				ctrl.Show(activeIndex)
 
 				return mod, nil
 			}).
@@ -249,20 +290,18 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry){
 				}),
 			).
 			Addf(func() (bar.Module, error) {
-				apiKeyFile := configdir.LocalConfig("openweathermap/apikey")
+				configFile := configdir.LocalConfig("i3/barista/openweathermap.json")
 
-				content, err := ioutil.ReadFile(apiKeyFile)
+				owm, err := openweathermap.NewFromConfig(configFile)
 				if os.IsNotExist(err) {
+					return static.New(outputs.Text(" config missing").
+						Color(colors.Scheme("disabled"))), nil
+				} else if err == openweathermap.ErrAPIKeyMissing {
 					return static.New(outputs.Text(" apiKey missing").
 						Color(colors.Scheme("disabled"))), nil
-				}
-
-				if err != nil {
+				} else if err != nil {
 					return nil, err
 				}
-
-				apiKey := strings.TrimSpace(string(content))
-				owm := openweathermap.New(apiKey).CityName("Berlin", "DE")
 
 				mod := weather.New(owm).Output(func(info weather.Weather) bar.Output {
 					return outputs.Textf(" %.0f°C, %s", info.Temperature.Celsius(), info.Description).
