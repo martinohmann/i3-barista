@@ -56,7 +56,7 @@ func TestModule(t *testing.T) {
 
 	out := testBar.NextOutput("on start")
 	out.AssertText([]string{"us"})
-	testProvider.SetLayout("de")
+	_ = testProvider.SetLayout("de")
 	k.Refresh()
 	out = testBar.NextOutput("layout changed")
 	out.AssertText([]string{"de"})

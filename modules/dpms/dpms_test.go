@@ -54,11 +54,11 @@ func TestModule(t *testing.T) {
 
 	out := testBar.NextOutput("on start")
 	out.AssertText([]string{"dpms enabled"})
-	testProvider.Set(false)
+	_ = testProvider.Set(false)
 	k.Refresh()
 	out = testBar.NextOutput("dpms disabled")
 	out.AssertText([]string{"dpms disabled"})
-	testProvider.Set(true)
+	_ = testProvider.Set(true)
 	k.Refresh()
 	out = testBar.NextOutput("reenabled")
 	out.AssertText([]string{"dpms enabled"})
