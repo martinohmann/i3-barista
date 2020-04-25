@@ -10,10 +10,14 @@ import (
 	"github.com/martinohmann/i3-barista/modules/ip"
 )
 
+// New create a new *ip.Module using https://ipify.org to look up the current
+// public ip address.
 func New() *ip.Module {
 	return ip.New(Provider)
 }
 
+// Provider is an ip.Provider which retrieves the publich ip via
+// https://api.ipify.org.
 var Provider = ip.ProviderFunc(func() (net.IP, error) {
 	req, err := http.NewRequest(http.MethodGet, "https://api.ipify.org", nil)
 	if err != nil {
