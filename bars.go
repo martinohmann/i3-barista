@@ -31,6 +31,7 @@ import (
 	"github.com/martinohmann/i3-barista/internal/notify"
 	"github.com/martinohmann/i3-barista/modules"
 	"github.com/martinohmann/i3-barista/modules/cpufreq"
+	"github.com/martinohmann/i3-barista/modules/cpufreq/sysfs"
 	"github.com/martinohmann/i3-barista/modules/dpms"
 	"github.com/martinohmann/i3-barista/modules/dpms/xset"
 	"github.com/martinohmann/i3-barista/modules/ip"
@@ -40,7 +41,7 @@ import (
 	"github.com/martinohmann/i3-barista/modules/updates"
 	"github.com/martinohmann/i3-barista/modules/updates/pacman"
 	"github.com/martinohmann/i3-barista/modules/weather/openweathermap"
-	"github.com/prometheus/procfs/sysfs"
+	psysfs "github.com/prometheus/procfs/sysfs"
 )
 
 func init() {
@@ -275,12 +276,12 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry) error{
 				}),
 			).
 			Addf(func() (bar.Module, error) {
-				sysfs, err := sysfs.NewDefaultFS()
+				fs, err := psysfs.NewDefaultFS()
 				if err != nil {
 					return nil, err
 				}
 
-				mod := cpufreq.New(sysfs).Output(func(info cpufreq.Info) bar.Output {
+				mod := sysfs.New(fs).Output(func(info cpufreq.Info) bar.Output {
 					return outputs.Textf(" %.2fGHz", info.AverageFreq().Gigahertz()).
 						Color(colors.Scheme("color10"))
 				})

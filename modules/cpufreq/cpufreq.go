@@ -13,7 +13,7 @@ import (
 )
 
 type Provider interface {
-	SystemCpufreq() ([]sysfs.SystemCPUCpufreqStats, error)
+	GetCPUFrequency() (Info, error)
 }
 
 type Info struct {
@@ -77,14 +77,12 @@ func New(provider Provider) *Module {
 }
 
 func (m *Module) Stream(s bar.Sink) {
-	stats, err := m.provider.SystemCpufreq()
+	info, err := m.provider.GetCPUFrequency()
 	outputFunc := m.outputFunc.Get().(func(Info) bar.Output)
 	for {
 		if s.Error(err) {
 			continue
 		}
-
-		info := Info{Stats: stats}
 
 		s.Output(outputFunc(info))
 
@@ -92,9 +90,9 @@ func (m *Module) Stream(s bar.Sink) {
 		case <-m.outputFunc.Next():
 			outputFunc = m.outputFunc.Get().(func(Info) bar.Output)
 		case <-m.notifyCh:
-			stats, err = m.provider.SystemCpufreq()
+			info, err = m.provider.GetCPUFrequency()
 		case <-m.scheduler.C:
-			stats, err = m.provider.SystemCpufreq()
+			info, err = m.provider.GetCPUFrequency()
 		}
 	}
 }
