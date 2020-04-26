@@ -167,10 +167,8 @@ func New(provider Provider, layouts ...string) *Module {
 		scheduler: timing.NewScheduler(),
 	}
 
-	m.controller = newController(provider, layouts, func() {
-		m.Refresh()
-	})
 	m.notifyFn, m.notifyCh = notifier.New()
+	m.controller = newController(provider, layouts, m.notifyFn)
 	m.outputFunc.Set(func(layout Layout) bar.Output {
 		return outputs.Text(layout.Name)
 	})

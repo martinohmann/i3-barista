@@ -113,7 +113,7 @@ func (m *Module) Stream(s bar.Sink) {
 		if !s.Error(err) {
 			info := Info{
 				Enabled:  enabled,
-				update:   func() { m.Refresh() },
+				update:   m.notifyFn,
 				provider: m.provider,
 			}
 
