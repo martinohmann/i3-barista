@@ -1,8 +1,8 @@
 package xkbmap
 
 import (
+	"github.com/martinohmann/i3-barista/internal/xkbmap"
 	"github.com/martinohmann/i3-barista/modules/keyboard"
-	"github.com/martinohmann/i3-barista/xkbmap"
 )
 
 // New creates a new *keyboard.Module using xkbmap as provider for keyboard

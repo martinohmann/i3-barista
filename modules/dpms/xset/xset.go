@@ -1,8 +1,8 @@
 package xset
 
 import (
+	"github.com/martinohmann/i3-barista/internal/xset"
 	"github.com/martinohmann/i3-barista/modules/dpms"
-	"github.com/martinohmann/i3-barista/xset"
 )
 
 // New creates a new *dpms.Module using xset as a DPMS provider.
