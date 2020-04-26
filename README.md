@@ -61,7 +61,7 @@ bar {
 The bar requires the following binaries to be available in the path to function correctly:
 
 - `checkupdates` from
-- [pacman-contrib](https://www.archlinux.org/packages/community/x86_64/pacman-contrib/)
+  [pacman-contrib](https://www.archlinux.org/packages/community/x86_64/pacman-contrib/)
   for displaying pacman updates in the bar
 - `nmtui-connect` for managing wifi networks
 - `urxvt` to open certain click actions in a terminal
