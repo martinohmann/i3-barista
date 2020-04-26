@@ -4,19 +4,13 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-func TestQuery(t *testing.T) {
-	oldQuery := query
-	defer func() { query = oldQuery }()
-
-	query = func() ([]byte, error) {
-		return []byte(`rules:      evdev
+func TestParseQueryOutput(t *testing.T) {
+	raw := []byte(`rules:      evdev
 model:      pc105
 layout:     us
-`), nil
-	}
+`)
 
 	expected := Info{
 		Rules:  "evdev",
@@ -24,7 +18,5 @@ layout:     us
 		Layout: "us",
 	}
 
-	info, err := Query()
-	require.NoError(t, err)
-	assert.Equal(t, expected, info)
+	assert.Equal(t, expected, parseQueryOutput(raw))
 }

@@ -1,36 +1,43 @@
 package xkbmap
 
 import (
+	"bufio"
+	"bytes"
 	"os/exec"
 	"regexp"
-	"strings"
 )
 
-// query can be replaced in tests.
-var query = func() ([]byte, error) {
-	return exec.Command("setxkbmap", "-query").Output()
-}
+var xkbInfoRegexp = regexp.MustCompile(`([^:]*?)\s*:\s*(.*)$`)
 
+// Info contains information about the current keyboard layout.
 type Info struct {
 	Rules  string
 	Model  string
 	Layout string
 }
 
-var xkbInfoRegexp = regexp.MustCompile(`([^:]*?)\s*:\s*(.*)$`)
-
+// Query retrieves keyboard information using setxkbmap -query.
 func Query() (Info, error) {
-	raw, err := query()
+	output, err := exec.Command("setxkbmap", "-query").Output()
 	if err != nil {
 		return Info{}, err
 	}
 
-	lines := strings.Split(string(raw), "\n")
+	return parseQueryOutput(output), nil
+}
+
+// SetLayout sets the keyboard layout.
+func SetLayout(layout string) error {
+	return exec.Command("setxkbmap", layout).Run()
+}
+
+func parseQueryOutput(raw []byte) Info {
+	scanner := bufio.NewScanner(bytes.NewReader(raw))
 
 	info := Info{}
 
-	for _, line := range lines {
-		submatches := xkbInfoRegexp.FindStringSubmatch(line)
+	for scanner.Scan() {
+		submatches := xkbInfoRegexp.FindStringSubmatch(scanner.Text())
 		if submatches == nil {
 			continue
 		}
@@ -48,9 +55,5 @@ func Query() (Info, error) {
 		}
 	}
 
-	return info, nil
-}
-
-func SetLayout(layout string) error {
-	return exec.Command("setxkbmap", layout).Run()
+	return info
 }
