@@ -1,6 +1,9 @@
 package pacman
 
 import (
+	"bufio"
+	"bytes"
+	"fmt"
 	"os/exec"
 	"strings"
 
@@ -13,13 +16,45 @@ func New() *updates.Module {
 }
 
 // Provider is an updates.Provider which checks for pacman updates.
-var Provider = updates.ProviderFunc(func() (int, error) {
+var Provider = updates.ProviderFunc(func() (updates.Info, error) {
 	out, err := exec.Command("checkupdates").Output()
 	if err != nil {
-		return 0, err
+		return updates.Info{}, err
 	}
 
-	lines := strings.Split(strings.TrimRight(string(out), "\n"), "\n")
+	details, err := parsePackageDetails(out)
+	if err != nil {
+		return updates.Info{}, err
+	}
 
-	return len(lines), nil
+	info := updates.Info{
+		Updates:        len(details),
+		PackageDetails: details,
+	}
+
+	return info, nil
 })
+
+func parsePackageDetails(raw []byte) (updates.PackageDetails, error) {
+	scanner := bufio.NewScanner(bytes.NewReader(raw))
+
+	details := updates.PackageDetails{}
+
+	for scanner.Scan() {
+		var detail updates.PackageDetail
+
+		line := strings.TrimSpace(scanner.Text())
+		if len(line) == 0 {
+			continue
+		}
+
+		_, err := fmt.Sscanf(line, "%s %s -> %s", &detail.PackageName, &detail.CurrentVersion, &detail.TargetVersion)
+		if err != nil {
+			return nil, err
+		}
+
+		details = append(details, detail)
+	}
+
+	return details, nil
+}

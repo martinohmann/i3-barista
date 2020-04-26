@@ -3,6 +3,7 @@ package main
 import (
 	"net"
 	"os"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -27,6 +28,7 @@ import (
 	"barista.run/outputs"
 	"github.com/kirsle/configdir"
 	"github.com/martinlindhe/unit"
+	"github.com/martinohmann/i3-barista/internal/notify"
 	"github.com/martinohmann/i3-barista/modules"
 	"github.com/martinohmann/i3-barista/modules/cpufreq"
 	"github.com/martinohmann/i3-barista/modules/dpms"
@@ -35,6 +37,7 @@ import (
 	"github.com/martinohmann/i3-barista/modules/ip/ipify"
 	"github.com/martinohmann/i3-barista/modules/keyboard"
 	"github.com/martinohmann/i3-barista/modules/keyboard/xkbmap"
+	"github.com/martinohmann/i3-barista/modules/updates"
 	"github.com/martinohmann/i3-barista/modules/updates/pacman"
 	"github.com/martinohmann/i3-barista/modules/weather/openweathermap"
 	"github.com/prometheus/procfs/sysfs"
@@ -122,13 +125,15 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry){
 
 					return out
 				}),
-				pacman.New().Output(func(updates int) bar.Output {
-					if updates == 0 {
+				pacman.New().Output(func(info updates.Info) bar.Output {
+					if info.Updates == 0 {
 						return nil
 					}
 
-					return outputs.Textf(" %d", updates).
-						OnClick(click.RunLeft("urxvt", "-e", "sh", "-c", "sudo pacman -Syu; $SHELL"))
+					return outputs.Textf(" %d", info.Updates).
+						OnClick(click.Left(func() {
+							notify.Send("Pacman", info.PackageDetails.String())
+						}))
 				}),
 				wlan.Any().Output(func(info wlan.Info) bar.Output {
 					onClick := click.RunLeft("urxvt", "-name", "nmtui", "-geometry", "100x40", "-e", "nmtui-connect")
@@ -150,12 +155,15 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry){
 				static.New(outputs.Text("").OnClick(click.RunLeft("dmenu_session"))),
 				clock.Local().Output(time.Second, func(now time.Time) bar.Output {
 					return outputs.Textf(" %s ", now.Format("Mon Jan 02 2006 15:04")).
-						OnClick(click.RunLeft("sh", "-c", `
-							cal=$(cal --months 6 --color=always | \
-								sed 's|\x1B\[7m|<span foreground="#000000" background="#ffffff"><b>|g;
-									 s|\x1B\[27m|</b></span>|g')
-							notify-send --expire-time 10000 --icon none --app-name "Calendar" " " "$cal"
-						`))
+						OnClick(click.Left(func() {
+							output, _ := exec.Command("sh", "-c", `
+								cal --months 6 --color=always | \
+									sed 's|\x1B\[7m|<span foreground="#000000" background="#ffffff"><b>|g;
+										 s|\x1B\[27m|</b></span>|g'
+							`).Output()
+
+							notify.Send("Calendar", string(output))
+						}))
 				}),
 			)
 	},
