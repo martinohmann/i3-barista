@@ -132,7 +132,7 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry){
 
 					return outputs.Textf(" %d", info.Updates).
 						OnClick(click.Left(func() {
-							notify.Send("Pacman", info.PackageDetails.String())
+							notify.Send("Available Pacman Updates", info.PackageDetails.String())
 						}))
 				}),
 				wlan.Any().Output(func(info wlan.Info) bar.Output {
@@ -309,13 +309,12 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry){
 
 				owm, err := openweathermap.NewFromConfig(configFile)
 				if os.IsNotExist(err) {
-					return static.New(outputs.Text(" config missing").
-						Color(colors.Scheme("disabled"))), nil
+					return nil, nil
 				} else if err == openweathermap.ErrAPIKeyMissing {
 					return static.New(outputs.Text(" apiKey missing").
 						Color(colors.Scheme("disabled"))), nil
 				} else if err != nil {
-					return nil, err
+					return static.New(outputs.Errorf("failed to load openweathermap config: %v", err)), nil
 				}
 
 				mod := weather.New(owm).Output(func(info weather.Weather) bar.Output {
