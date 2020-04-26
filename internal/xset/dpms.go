@@ -8,6 +8,7 @@ import (
 
 var dpmsRegexp = regexp.MustCompile(`(?m)^\s*DPMS is\s+(.*)$`)
 
+// SetDPMS enables or disables DPMS.
 func SetDPMS(enabled bool) error {
 	arg := "-dpms"
 	if enabled {
@@ -17,6 +18,7 @@ func SetDPMS(enabled bool) error {
 	return exec.Command("xset", arg).Run()
 }
 
+// GetDPMS retrieves the current DPMS status.
 func GetDPMS() (bool, error) {
 	out, err := exec.Command("xset", "-q").Output()
 	if err != nil {
