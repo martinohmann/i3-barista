@@ -68,7 +68,7 @@ func New(provider Provider) *Module {
 
 	m.notifyFn, m.notifyCh = notifier.New()
 	m.outputFunc.Set(func(info Info) bar.Output {
-		return outputs.Textf("%v", info)
+		return outputs.Textf("%.2fGHz", info.AverageFreq().Gigahertz())
 	})
 
 	m.Every(10 * time.Second)
