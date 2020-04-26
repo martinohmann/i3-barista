@@ -8,8 +8,6 @@ Additional modules for i3 [barista](https://github.com/soumya92/barista). This
 repository also contains the configuration for the bars I use together with i3
 status.
 
-WIP
-
 ## Module installation
 
 If you just want you use the [modules](https://godoc.org/github.com/martinohmann/i3-barista/modules):
@@ -62,13 +60,16 @@ bar {
 
 The bar requires the following binaries to be available in the path to function correctly:
 
-- `pacman` and `checkupdates` for displaying pacman updates in the bar
+- `checkupdates` from
+- [pacman-contrib](https://www.archlinux.org/packages/community/x86_64/pacman-contrib/)
+  for displaying pacman updates in the bar
 - `nmtui-connect` for managing wifi networks
 - `urxvt` to open certain click actions in a terminal
-- `dmenu_session` for displaying the session picker
+- [`dmenu_session`](https://github.com/martinohmann/bin-pub/blob/master/dmenu_session)
+  for displaying the session picker when clicking on the session bar segment
 - `xset` for querying and toggling DPMS
 - `setxkblayout` for querying and toggling keyboard layouts
-- `notify send` for displaying the calendar when clicking the clock
+- `notify-send` for displaying additional information when clicking certain bar segments
 
 ### OpenWeatherMap configuration
 
@@ -82,5 +83,3 @@ for all configuration values.
 
 The source code of i3-barista is released under the MIT License. See the bundled
 LICENSE file for details.
-
-
