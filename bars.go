@@ -153,19 +153,26 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry){
 					return outputs.Textf("⌨ %s", strings.ToUpper(layout.Name))
 				}),
 				static.New(outputs.Text("").OnClick(click.RunLeft("dmenu_session"))),
-				clock.Local().Output(time.Second, func(now time.Time) bar.Output {
+			).
+			Addf(func() (bar.Module, error) {
+				replacer := strings.NewReplacer(
+					"\u001b[7m", `<span foreground="#000000" background="#ffffff"><b>`,
+					"\u001b[27m", `</b></span>`,
+				)
+
+				calenderFn := func() string {
+					out, _ := exec.Command("cal", "--months", "6", "--color=always").Output()
+					return string(out)
+				}
+
+				mod := clock.Local().Output(time.Second, func(now time.Time) bar.Output {
 					return outputs.Textf(" %s ", now.Format("Mon Jan 02 2006 15:04")).
 						OnClick(click.Left(func() {
-							output, _ := exec.Command("sh", "-c", `
-								cal --months 6 --color=always | \
-									sed 's|\x1B\[7m|<span foreground="#000000" background="#ffffff"><b>|g;
-										 s|\x1B\[27m|</b></span>|g'
-							`).Output()
-
-							notify.Send("Calendar", string(output))
+							notify.Send("Calendar", replacer.Replace(calenderFn()))
 						}))
-				}),
-			)
+				})
+				return mod, nil
+			})
 	},
 	"bottom": func(registry *modules.Registry) {
 		registry.
