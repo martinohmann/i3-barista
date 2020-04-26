@@ -38,16 +38,15 @@ type options struct {
 }
 
 func (o *options) Run() error {
-	factory, ok := barFactoryFuncs[o.bar]
+	registerModules, ok := barFactoryFuncs[o.bar]
 	if !ok {
 		return fmt.Errorf("unsupported bar %q", o.bar)
 	}
 
 	registry := modules.NewRegistry()
 
-	factory(registry)
-
-	if err := registry.Err(); err != nil {
+	err := registerModules(registry)
+	if err != nil {
 		return err
 	}
 

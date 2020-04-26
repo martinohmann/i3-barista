@@ -70,9 +70,9 @@ func init() {
 
 // barFactoryFuncs contains factory functions that populate the module registry
 // for every configured bar.
-var barFactoryFuncs = map[string]func(registry *modules.Registry){
-	"top": func(registry *modules.Registry) {
-		registry.
+var barFactoryFuncs = map[string]func(registry *modules.Registry) error{
+	"top": func(registry *modules.Registry) error {
+		return registry.
 			Add(
 				battery.All().Output(func(i battery.Info) bar.Output {
 					var sep string
@@ -172,10 +172,11 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry){
 						}))
 				})
 				return mod, nil
-			})
+			}).
+			Err()
 	},
-	"bottom": func(registry *modules.Registry) {
-		registry.
+	"bottom": func(registry *modules.Registry) error {
+		return registry.
 			Addf(func() (bar.Module, error) {
 				ifaces, err := net.Interfaces()
 				if err != nil {
@@ -334,6 +335,7 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry){
 
 					return out.Color(colors.Scheme("disabled"))
 				}),
-			)
+			).
+			Err()
 	},
 }
