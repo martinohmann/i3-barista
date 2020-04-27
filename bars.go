@@ -179,6 +179,9 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry) error{
 	"bottom": func(registry *modules.Registry) error {
 		return registry.
 			Addf(func() (bar.Module, error) {
+				// Prefix of the interface that should be active initially.
+				activePrefix := "wlp"
+
 				ifaces, err := net.Interfaces()
 				if err != nil {
 					return nil, err
@@ -186,19 +189,34 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry) error{
 
 				mods := make([]bar.Module, 0)
 
-				activeIndex := 0
-				activePrefix := "wlp"
+				// Collect modules.
+				for _, iface := range ifaces {
+					mods = append(mods, netspeed.New(iface.Name))
+				}
 
-				for i, iface := range ifaces {
-					iface := iface
+				group, ctrl := switching.Group(mods...)
 
-					if strings.HasPrefix(iface.Name, activePrefix) {
-						activeIndex = i
+				// Don't need no buttons, click handlers will be set on all bar segments.
+				ctrl.ButtonFunc(func(c switching.Controller) (start, end bar.Output) {
+					return nil, nil
+				})
+
+				clickHandler := func(e bar.Event) {
+					switch e.Button {
+					case bar.ButtonLeft:
+						ctrl.Next()
+					case bar.ButtonRight:
+						ctrl.Previous()
 					}
+				}
 
-					mod := netspeed.New(iface.Name).Output(func(s netspeed.Speeds) bar.Output {
-						out := outputs.Textf("異 %s %s   %s ",
-							iface.Name, format.IByterate(s.Tx), format.IByterate(s.Rx))
+				// Setup module output and click handlers.
+				for i, mod := range mods {
+					iface := ifaces[i]
+
+					mod.(*netspeed.Module).Output(func(s netspeed.Speeds) bar.Output {
+						out := outputs.Textf("異 %s %s   %s ", iface.Name, format.IByterate(s.Tx), format.IByterate(s.Rx)).
+							OnClick(clickHandler)
 
 						if s.Connected() {
 							return out.Color(colors.Scheme("color4"))
@@ -207,26 +225,12 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry) error{
 						return out.Color(colors.Scheme("disabled"))
 					})
 
-					mods = append(mods, mod)
+					if strings.HasPrefix(iface.Name, activePrefix) {
+						ctrl.Show(i)
+					}
 				}
 
-				mod, ctrl := switching.Group(mods...)
-
-				ctrl.ButtonFunc(func(c switching.Controller) (start, end bar.Output) {
-					if c.Current() > 0 {
-						start = outputs.Textf("").OnClick(click.Left(c.Previous)).
-							Color(colors.Scheme("color4"))
-					}
-					if c.Current()+1 < c.Count() {
-						end = outputs.Textf("").OnClick(click.Left(c.Next)).
-							Color(colors.Scheme("color4"))
-					}
-					return start, end
-				})
-
-				ctrl.Show(activeIndex)
-
-				return mod, nil
+				return group, nil
 			}).
 			Add(
 				ipify.New().Output(func(i ip.Info) bar.Output {
