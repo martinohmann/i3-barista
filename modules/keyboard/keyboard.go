@@ -102,46 +102,42 @@ func (c *controller) Next() {
 	c.Lock()
 	defer c.Unlock()
 
-	c.current++
-	if c.current >= len(c.layouts) {
-		c.current = 0
-	}
-
-	c.setLayout()
+	c.setLayout(c.current + 1)
 }
 
 func (c *controller) Previous() {
 	c.Lock()
 	defer c.Unlock()
 
-	c.current--
-	if c.current < 0 {
-		c.current = len(c.layouts) - 1
-	}
-
-	c.setLayout()
+	c.setLayout(c.current - 1)
 }
 
 func (c *controller) SetLayout(layout string) {
 	c.Lock()
 	defer c.Unlock()
 
-	idx, ok := c.layoutMap[layout]
+	index, ok := c.layoutMap[layout]
 	if !ok {
 		return
 	}
 
-	c.current = idx
-	c.setLayout()
+	c.setLayout(index)
 }
 
-func (c *controller) setLayout() {
-	current := c.layouts[c.current]
+func (c *controller) setLayout(index int) {
+	count := len(c.layouts)
 
-	if err := c.provider.SetLayout(current); err != nil {
+	// handle wrap around on either side
+	index = (index + count) % count
+
+	layout := c.layouts[index]
+
+	if err := c.provider.SetLayout(layout); err != nil {
 		l.Log("Error setting keyboard layout: %v", err)
 		return
 	}
+
+	c.current = index
 
 	c.update()
 }
@@ -170,7 +166,7 @@ func New(provider Provider, layouts ...string) *Module {
 	m.notifyFn, m.notifyCh = notifier.New()
 	m.controller = newController(provider, layouts, m.notifyFn)
 	m.outputFunc.Set(func(layout Layout) bar.Output {
-		return outputs.Text(layout.Name)
+		return outputs.Text(layout.String())
 	})
 
 	m.Every(10 * time.Second)

@@ -51,13 +51,13 @@ func TestModule(t *testing.T) {
 		layout: "us",
 	}
 
-	k := New(testProvider, "us", "de", "fr")
-	testBar.Run(k)
+	m := New(testProvider, "us", "de", "fr")
+	testBar.Run(m)
 
 	out := testBar.NextOutput("on start")
 	out.AssertText([]string{"us"})
 	_ = testProvider.SetLayout("de")
-	k.Refresh()
+	m.Refresh()
 	out = testBar.NextOutput("layout changed")
 	out.AssertText([]string{"de"})
 
@@ -96,7 +96,7 @@ func TestModule(t *testing.T) {
 
 	testProvider.setError(nil)
 
-	k.Output(func(layout Layout) bar.Output {
+	m.Output(func(layout Layout) bar.Output {
 		return outputs.Textf("keyboard: %s", layout.Name).
 			OnClick(func(e bar.Event) {
 				switch e.Button {
