@@ -19,16 +19,18 @@ func TestModule(t *testing.T) {
 		}
 	}())
 
-	u := New(p)
-	testBar.Run(u)
+	m := New(p)
+	testBar.Run(m)
 
 	testBar.LatestOutput().AssertText([]string{"1 update"})
-	u.Refresh()
+	testBar.Tick()
 	testBar.LatestOutput().AssertText([]string{"2 updates"})
-	u.Output(func(info Info) bar.Output {
+
+	m.Output(func(info Info) bar.Output {
 		return outputs.Textf("%d", info.Updates)
 	})
+
 	testBar.LatestOutput().AssertText([]string{"2"})
-	u.Refresh()
+	m.Refresh()
 	testBar.LatestOutput().AssertText([]string{"3"})
 }

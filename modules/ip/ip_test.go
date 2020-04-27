@@ -46,39 +46,39 @@ func TestModule(t *testing.T) {
 		ip: net.ParseIP("127.0.0.1"),
 	}
 
-	k := New(testProvider)
-	testBar.Run(k)
+	m := New(testProvider)
+	testBar.Run(m)
 
 	out := testBar.NextOutput("on start")
 	out.AssertText([]string{"127.0.0.1"})
 	testProvider.setIP(net.ParseIP("1.1.1.1"))
-	k.Refresh()
+	m.Refresh()
 	out = testBar.NextOutput("ip changed")
 	out.AssertText([]string{"1.1.1.1"})
 	testProvider.setIP(nil)
-	k.Refresh()
+	testBar.Tick()
 	out = testBar.NextOutput("disconnected")
 	out.AssertText([]string{"offline"})
 
 	testProvider.setError(errors.New("whoops"))
 
-	k.Refresh()
+	testBar.Tick()
 	out = testBar.NextOutput("next layout")
 	out.AssertError()
 
 	testProvider.setError(nil)
 
-	k.Output(func(info Info) bar.Output {
+	m.Output(func(info Info) bar.Output {
 		return outputs.Textf("ip: %s", info.IP)
 	})
 
 	out = testBar.NextOutput("outputFunc changed")
 	out.AssertText([]string{"Error"})
-	k.Refresh()
+	testBar.Tick()
 
 	out = testBar.NextOutput("next interval")
 	out.AssertText([]string{"ip: <nil>"})
-	k.Refresh()
+	testBar.Tick()
 
 	testProvider.setIP(net.ParseIP("10.10.10.10"))
 	out = testBar.NextOutput("ip changed")

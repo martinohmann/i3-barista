@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"barista.run/bar"
+	"barista.run/outputs"
 	testBar "barista.run/testing/bar"
 )
 
@@ -49,17 +50,17 @@ func TestModule(t *testing.T) {
 		enabled: true,
 	}
 
-	k := New(testProvider)
-	testBar.Run(k)
+	m := New(testProvider)
+	testBar.Run(m)
 
 	out := testBar.NextOutput("on start")
 	out.AssertText([]string{"dpms enabled"})
 	_ = testProvider.Set(false)
-	k.Refresh()
+	m.Refresh()
 	out = testBar.NextOutput("dpms disabled")
 	out.AssertText([]string{"dpms disabled"})
 	_ = testProvider.Set(true)
-	k.Refresh()
+	testBar.Tick()
 	out = testBar.NextOutput("reenabled")
 	out.AssertText([]string{"dpms enabled"})
 
@@ -67,41 +68,41 @@ func TestModule(t *testing.T) {
 	out = testBar.NextOutput("disabled via default click handler")
 	out.AssertText([]string{"dpms disabled"})
 
-	testProvider.setError(errors.New("whoops"))
+	m.Output(func(info Info) bar.Output {
+		return outputs.Textf("dpms: %v", info.Enabled).
+			OnClick(func(e bar.Event) {
+				switch e.Button {
+				case bar.ButtonLeft:
+					info.Enable()
+				case bar.ButtonRight:
+					info.Disable()
+				case bar.ScrollUp:
+					info.Toggle()
+				}
+			})
+	})
 
-	k.Refresh()
+	out = testBar.NextOutput("on output format change")
+
+	out.At(0).Click(bar.Event{Button: bar.ButtonLeft})
+	out = testBar.NextOutput("enable")
+	out.AssertText([]string{"dpms: true"})
+
+	out.At(0).Click(bar.Event{Button: bar.ButtonRight})
+	out = testBar.NextOutput("disable")
+	out.AssertText([]string{"dpms: false"})
+
+	out.At(0).Click(bar.Event{Button: bar.ScrollUp})
+	out = testBar.NextOutput("toggle")
+	out.AssertText([]string{"dpms: true"})
+
+	testProvider.setError(errors.New("whoops"))
+	testBar.Tick()
 	out = testBar.NextOutput("error")
 	out.AssertError()
 
-	// @FIXME: for some reason the following shows weird behaviour
-	//
-	// testProvider.setError(nil)
-
-	// k.Output(func(info Info) bar.Output {
-	// 	return outputs.Textf("dpms: %v", info.Enabled).
-	// 		OnClick(func(e bar.Event) {
-	// 			switch e.Button {
-	// 			case bar.ButtonLeft:
-	// 				info.Enable()
-	// 			case bar.ButtonRight:
-	// 				info.Disable()
-	// 			case bar.ScrollUp:
-	// 				info.Disable()
-	// 			}
-	// 		})
-	// })
-
-	// out = testBar.NextOutput("on output format change")
-
-	// out.At(0).Click(bar.Event{Button: bar.ButtonLeft})
-	// out = testBar.NextOutput("enable")
-	// out.AssertText([]string{"dpms: true"})
-
-	// out.At(0).Click(bar.Event{Button: bar.ButtonRight})
-	// out = testBar.NextOutput("disable")
-	// out.AssertText([]string{"dpms: false"})
-
-	// out.At(0).Click(bar.Event{Button: bar.ScrollUp})
-	// out = testBar.NextOutput("toggle")
-	// out.AssertText([]string{"dpms: true"})
+	testProvider.setError(nil)
+	testBar.Tick()
+	out = testBar.NextOutput("error")
+	out.AssertText([]string{"dpms: true"})
 }
