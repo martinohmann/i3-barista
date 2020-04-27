@@ -16,7 +16,7 @@ func New() *ip.Module {
 	return ip.New(Provider)
 }
 
-// Provider is an ip.Provider which retrieves the publich ip via
+// Provider is an ip.Provider which retrieves the public ip via
 // https://api.ipify.org.
 var Provider = ip.ProviderFunc(func() (net.IP, error) {
 	req, err := http.NewRequest(http.MethodGet, "https://api.ipify.org", nil)
@@ -29,8 +29,14 @@ var Provider = ip.ProviderFunc(func() (net.IP, error) {
 
 	resp, err := http.DefaultClient.Do(req.WithContext(ctx))
 	if err != nil {
-		// Request errors most likely indicate that we are offline. Ignore them.
-		return nil, nil
+		if netErr, ok := err.(net.Error); ok {
+			if netErr.Temporary() || netErr.Timeout() {
+				// Transient errors and timeouts indicate that we are offline.
+				return nil, nil
+			}
+		}
+
+		return nil, err
 	}
 	defer resp.Body.Close()
 
