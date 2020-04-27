@@ -105,7 +105,7 @@ func TestModule(t *testing.T) {
 				case bar.ButtonRight:
 					layout.SetLayout("fr")
 				case bar.ScrollDown:
-					layouts := layout.AllLayouts()
+					layouts := layout.GetLayouts()
 					if len(layouts) > 0 {
 						layout.SetLayout(layouts[0])
 					}

@@ -36,9 +36,9 @@ type Controller interface {
 	// the module are ignored.
 	SetLayout(layout string)
 
-	// AllLayouts returns all layouts that are configured on the keyboard module
+	// GetLayouts returns all layouts that are configured on the keyboard module
 	// instance that the controller belongs to.
-	AllLayouts() []string
+	GetLayouts() []string
 }
 
 // Layout contains the name of the currently set keyboard layout. It also
@@ -92,7 +92,7 @@ func newController(provider Provider, layouts []string, updateFn func()) *contro
 	return c
 }
 
-func (c *controller) AllLayouts() []string {
+func (c *controller) GetLayouts() []string {
 	c.Lock()
 	defer c.Unlock()
 	return c.layouts
