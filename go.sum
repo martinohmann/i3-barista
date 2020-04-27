@@ -1,5 +1,7 @@
 barista.run v0.0.0-20200412044053-edd2eecdd506 h1:PXm62tCLvNHFsarJSDWYCKhh6vpIvmOa9ag0qFi0zxU=
 barista.run v0.0.0-20200412044053-edd2eecdd506/go.mod h1:X8zX8SAhjrQ++hmDwE+No+fdTqaMlta0E/X7UI7KJpQ=
+barista.run v0.0.0-20200426202729-0866017ac812 h1:KNTmIp6o+BNIeoO88ZSwpYvjpgyupuJfZb6XfPz0WiE=
+barista.run v0.0.0-20200426202729-0866017ac812/go.mod h1:X8zX8SAhjrQ++hmDwE+No+fdTqaMlta0E/X7UI7KJpQ=
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 cloud.google.com/go v0.38.0/go.mod h1:990N+gfupTy94rShfmMCWGDn0LpTmnzTp2qbd1dvSRU=

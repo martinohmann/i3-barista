@@ -78,7 +78,7 @@ func TestNew(t *testing.T) {
 				require.NoError(t, err)
 				require.IsType(t, provider, openweathermap.Provider(""))
 				url := string(provider.(openweathermap.Provider))
-				assert.Equal(t, "http://api.openweathermap.org/data/2.5/weather?"+test.expected, url)
+				assert.Equal(t, "https://api.openweathermap.org/data/2.5/weather?"+test.expected, url)
 			}
 		})
 	}
@@ -89,7 +89,7 @@ func TestNewFromConfig(t *testing.T) {
 	require.NoError(t, err)
 	require.IsType(t, provider, openweathermap.Provider(""))
 	url := string(provider.(openweathermap.Provider))
-	assert.Equal(t, "http://api.openweathermap.org/data/2.5/weather?appid=secret&id=123", url)
+	assert.Equal(t, "https://api.openweathermap.org/data/2.5/weather?appid=secret&id=123", url)
 
 	_, err = NewFromConfig("testdata/nonexistent.json")
 	require.Error(t, err)
