@@ -88,7 +88,21 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry) error{
 						sep = " "
 					}
 
-					out := outputs.Textf(" %d%% %s%s", i.RemainingPct(), sep, format.Duration(i.RemainingTime()))
+					var icon string
+					switch {
+					case i.RemainingPct() < 5:
+						icon = ""
+					case i.RemainingPct() < 30:
+						icon = ""
+					case i.RemainingPct() < 55:
+						icon = ""
+					case i.RemainingPct() < 80:
+						icon = ""
+					default:
+						icon = ""
+					}
+
+					out := outputs.Textf("%s %d%% %s%s", icon, i.RemainingPct(), sep, format.Duration(i.RemainingTime()))
 
 					switch {
 					case i.RemainingPct() < 5:
@@ -104,12 +118,11 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry) error{
 					return out
 				}),
 				volume.New(pulseaudio.DefaultSink()).Output(func(v volume.Volume) bar.Output {
-					out := outputs.Textf("婢 %d%%", v.Pct())
 					if v.Mute {
-						out = out.Color(colors.Scheme("color11"))
+						return outputs.Textf("婢 %d%%", v.Pct()).Color(colors.Scheme("color11"))
 					}
 
-					return out
+					return outputs.Textf("墳 %d%%", v.Pct())
 				}),
 				cputemp.OfType("acpitz").Output(func(t unit.Temperature) bar.Output {
 					out := outputs.Textf(" %.0f°C", t.Celsius())
