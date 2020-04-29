@@ -19,6 +19,14 @@ func New() *updates.Module {
 var Provider = updates.ProviderFunc(func() (updates.Info, error) {
 	out, err := exec.Command("checkupdates").Output()
 	if err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			if exitErr.ProcessState.ExitCode() == 2 {
+				// exit code 2 is not an error but signals that
+				// there are no updates available right now.
+				err = nil
+			}
+		}
+
 		return updates.Info{}, err
 	}
 
