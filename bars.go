@@ -187,11 +187,11 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry) error{
 					return nil, err
 				}
 
-				mods := make([]bar.Module, 0)
+				mods := make([]bar.Module, len(ifaces))
 
 				// Collect modules.
-				for _, iface := range ifaces {
-					mods = append(mods, netspeed.New(iface.Name))
+				for i, iface := range ifaces {
+					mods[i] = netspeed.New(iface.Name)
 				}
 
 				group, ctrl := switching.Group(mods...)
@@ -211,10 +211,10 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry) error{
 				}
 
 				// Setup module output and click handlers.
-				for i, mod := range mods {
-					iface := ifaces[i]
+				for i, iface := range ifaces {
+					mod := mods[i].(*netspeed.Module)
 
-					mod.(*netspeed.Module).Output(func(s netspeed.Speeds) bar.Output {
+					mod.Output(func(s netspeed.Speeds) bar.Output {
 						out := outputs.Textf("異 %s %s   %s ", iface.Name, format.IByterate(s.Tx), format.IByterate(s.Rx)).
 							OnClick(clickHandler)
 
@@ -285,12 +285,10 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry) error{
 					return nil, err
 				}
 
-				mod := sysfs.New(fs).Output(func(info cpufreq.Info) bar.Output {
+				return sysfs.New(fs).Output(func(info cpufreq.Info) bar.Output {
 					return outputs.Textf(" %.2fGHz", info.AverageFreq().Gigahertz()).
 						Color(colors.Scheme("color10"))
-				})
-
-				return mod, nil
+				}), nil
 			}).
 			Add(
 				sysinfo.New().Output(func(i sysinfo.Info) bar.Output {
@@ -314,21 +312,20 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry) error{
 				configFile := configdir.LocalConfig("i3/barista/openweathermap.json")
 
 				owm, err := openweathermap.NewFromConfig(configFile)
-				if os.IsNotExist(err) {
+				switch {
+				case os.IsNotExist(err):
 					return nil, nil
-				} else if err == openweathermap.ErrAPIKeyMissing {
+				case err == openweathermap.ErrAPIKeyMissing:
 					return static.New(outputs.Text(" apiKey missing").
 						Color(colors.Scheme("disabled"))), nil
-				} else if err != nil {
+				case err != nil:
 					return static.New(outputs.Errorf("failed to load openweathermap config: %v", err)), nil
 				}
 
-				mod := weather.New(owm).Output(func(info weather.Weather) bar.Output {
+				return weather.New(owm).Output(func(info weather.Weather) bar.Output {
 					return outputs.Textf(" %.0f°C, %s", info.Temperature.Celsius(), info.Description).
 						Color(colors.Scheme("color14"))
-				})
-
-				return mod, nil
+				}), nil
 			}).
 			Add(
 				xset.New().Output(func(info dpms.Info) bar.Output {
