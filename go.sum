@@ -1,5 +1,3 @@
-barista.run v0.0.0-20200412044053-edd2eecdd506 h1:PXm62tCLvNHFsarJSDWYCKhh6vpIvmOa9ag0qFi0zxU=
-barista.run v0.0.0-20200412044053-edd2eecdd506/go.mod h1:X8zX8SAhjrQ++hmDwE+No+fdTqaMlta0E/X7UI7KJpQ=
 barista.run v0.0.0-20200426202729-0866017ac812 h1:KNTmIp6o+BNIeoO88ZSwpYvjpgyupuJfZb6XfPz0WiE=
 barista.run v0.0.0-20200426202729-0866017ac812/go.mod h1:X8zX8SAhjrQ++hmDwE+No+fdTqaMlta0E/X7UI7KJpQ=
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
@@ -110,6 +108,8 @@ github.com/lucasb-eyer/go-colorful v1.0.3/go.mod h1:R4dSotOR9KMtayYi1e77YzuveK+i
 github.com/magiconair/properties v1.8.0/go.mod h1:PppfXfuXeibc/6YijjN8zIbojt8czPbwD3XqdrwzmxQ=
 github.com/martinlindhe/unit v0.0.0-20190604142932-3b6be53d49af h1:4bEyeobv/dO+lT1Qp1hr+/DcNjy6Ob8BDaSrxX6nQsQ=
 github.com/martinlindhe/unit v0.0.0-20190604142932-3b6be53d49af/go.mod h1:TfoBMGnmSr50HiDNgz6W6mobVXv1B2VJUO3zUR8b6O4=
+github.com/martinohmann/barista-contrib v0.0.0-20200501070428-ad64ddb3581f h1:BcV2TlmHb8OG05dyzj17uJb+pLUSfjxXQpRy8VAzoGA=
+github.com/martinohmann/barista-contrib v0.0.0-20200501070428-ad64ddb3581f/go.mod h1:inVBU8KNV1DHNbSD8pUGysP27vAdNlWdMfzYDiXSS9o=
 github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5Ld7szi9bcBfOoFv/3dc6xSMkL2PC0=
 github.com/maximbaz/yubikey-touch-detector v0.0.0-20200307130350-24f6f7449a30/go.mod h1:3CReA3g4P6U2Zi1mI9Durv3k2KyH1jEaSg026qKQ144=
 github.com/mitchellh/go-homedir v1.1.0/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrkLzIz1N1q0pr0=

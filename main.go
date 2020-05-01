@@ -5,7 +5,7 @@ import (
 	"log"
 
 	barista "barista.run"
-	"github.com/martinohmann/i3-barista/modules"
+	"github.com/martinohmann/barista-contrib/modules"
 	"github.com/spf13/cobra"
 )
 

@@ -4,21 +4,10 @@
 [![GoDoc](https://godoc.org/github.com/martinohmann/i3-barista?status.svg)](https://godoc.org/github.com/martinohmann/i3-barista)
 ![GitHub](https://img.shields.io/github/license/martinohmann/i3-barista?color=orange)
 
-Additional modules for i3 [barista](https://github.com/soumya92/barista). This
-repository also contains the configuration for the bars I use together with i3
-status.
-
-## Module installation
-
-If you just want you use the [modules](https://godoc.org/github.com/martinohmann/i3-barista/modules):
-
-```
-go get -u github.com/martinohmann/i3-barista
-```
-
-## Bar
-
-Screenshot
+My personal i3-status bar based on [barista](https://barista.run). The
+community modules can be found in the
+[martinohmann/barista-contrib](https://github.com/martinohmann/barista-contrib)
+repository.
 
 [![i3-barista](assets/screenshot.png)](assets/screenshot.png)
 
