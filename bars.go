@@ -225,7 +225,9 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry) error{
 				}
 
 				// Setup module output and click handlers.
-				for i, iface := range ifaces {
+				for i := 0; i < len(ifaces); i++ {
+					iface := ifaces[i]
+
 					mod := mods[i].(*netspeed.Module)
 
 					mod.Output(func(s netspeed.Speeds) bar.Output {
