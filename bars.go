@@ -78,8 +78,6 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry) error{
 				battery.All().Output(func(i battery.Info) bar.Output {
 					var sep string
 					switch {
-					case i.Status == battery.Full:
-						return outputs.Textf(" %d%%", i.RemainingPct())
 					case i.Status == battery.Disconnected:
 						return outputs.Text(" not present").Color(colors.Scheme("disabled"))
 					case i.Status == battery.Charging:
@@ -102,7 +100,10 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry) error{
 						icon = ""
 					}
 
-					out := outputs.Textf("%s %d%% %s%s", icon, i.RemainingPct(), sep, format.Duration(i.RemainingTime()))
+					out := outputs.Textf("%s %d%%", icon, i.RemainingPct())
+					if i.RemainingTime() >= 1*time.Second {
+						out = outputs.Textf("%s %d%% %s%s", icon, i.RemainingPct(), sep, format.Duration(i.RemainingTime()))
+					}
 
 					switch {
 					case i.RemainingPct() < 5:
