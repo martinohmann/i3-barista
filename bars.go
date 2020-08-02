@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"net"
 	"os"
 	"os/exec"
+	"os/user"
 	"strings"
 	"time"
 
@@ -118,13 +121,26 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry) error{
 
 					return out
 				}),
-				volume.New(pulseaudio.DefaultSink()).Output(func(v volume.Volume) bar.Output {
+			).
+			Addf(func() (bar.Module, error) {
+				u, err := user.Current()
+				if err != nil {
+					return nil, err
+				}
+
+				dbusSocketPath := fmt.Sprintf("/run/user/%s/pulse/dbus-socket", u.Uid)
+
+				<-waitForSocket(dbusSocketPath, 5*time.Second)
+
+				return volume.New(pulseaudio.DefaultSink()).Output(func(v volume.Volume) bar.Output {
 					if v.Mute {
 						return outputs.Textf("婢 %d%%", v.Pct()).Color(colors.Scheme("color11"))
 					}
 
 					return outputs.Textf("墳 %d%%", v.Pct())
-				}),
+				}), nil
+			}).
+			Add(
 				cputemp.OfType("acpitz").Output(func(t unit.Temperature) bar.Output {
 					out := outputs.Textf(" %.0f°C", t.Celsius())
 					switch {
@@ -356,4 +372,30 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry) error{
 			).
 			Err()
 	},
+}
+
+func waitForSocket(path string, timeout time.Duration) <-chan struct{} {
+	ch := make(chan struct{})
+
+	go func(timeout time.Duration) {
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		for {
+			_, err := os.Stat(path)
+			if err == nil {
+				close(ch)
+				return
+			}
+
+			select {
+			case <-ctx.Done():
+				close(ch)
+				return
+			case <-time.After(500 * time.Millisecond):
+			}
+		}
+	}(timeout)
+
+	return ch
 }
