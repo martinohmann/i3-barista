@@ -19,6 +19,7 @@ import (
 	"barista.run/modules/clock"
 	"barista.run/modules/cputemp"
 	"barista.run/modules/diskspace"
+	"barista.run/modules/github"
 	"barista.run/modules/meminfo"
 	"barista.run/modules/netinfo"
 	"barista.run/modules/netspeed"
@@ -43,6 +44,7 @@ import (
 	"github.com/martinohmann/barista-contrib/modules/updates"
 	"github.com/martinohmann/barista-contrib/modules/updates/pacman"
 	"github.com/martinohmann/barista-contrib/modules/weather/openweathermap"
+	"github.com/martinohmann/i3-barista/internal/keyring"
 	"github.com/martinohmann/i3-barista/internal/notify"
 	psysfs "github.com/prometheus/procfs/sysfs"
 )
@@ -208,6 +210,35 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry) error{
 	},
 	"bottom": func(registry *modules.Registry) error {
 		return registry.
+			Add(
+				github.New(
+					keyring.MustGet("GITHUB_CLIENT_ID"),
+					keyring.MustGet("GITHUB_CLIENT_SECRET"),
+				).Output(func(n github.Notifications) bar.Output {
+					if n.Total() == 0 {
+						return nil
+					}
+
+					clickHandler := click.RunLeft("xdg-open", "https://github.com/notifications")
+
+					var urgent []string
+
+					for _, reason := range []string{"assign", "mention", "review_requested"} {
+						if n[reason] > 0 {
+							urgent = append(urgent, fmt.Sprintf("%d %s", n[reason], strings.ReplaceAll(reason, "_", " ")))
+						}
+					}
+
+					if len(urgent) > 0 {
+						return outputs.Textf(" %d (%s)", n.Total(), strings.Join(urgent, ", ")).
+							Urgent(true).
+							OnClick(clickHandler)
+					}
+
+					return outputs.Textf(" %d", n.Total()).
+						OnClick(clickHandler)
+				}),
+			).
 			Addf(func() (bar.Module, error) {
 				// Prefix of the interface that should be active initially.
 				activePrefix := "wlp"

@@ -11,6 +11,7 @@ require (
 	github.com/prometheus/procfs v0.0.11
 	github.com/spf13/afero v1.3.3 // indirect
 	github.com/spf13/cobra v1.0.0
+	github.com/zalando/go-keyring v0.1.0
 	golang.org/x/sys v0.0.0-20200802091954-4b90ce9b60b3 // indirect
 	golang.org/x/text v0.3.3 // indirect
 	google.golang.org/appengine v1.6.6 // indirect
