@@ -19,7 +19,6 @@ import (
 	"barista.run/modules/clock"
 	"barista.run/modules/cputemp"
 	"barista.run/modules/diskspace"
-	"barista.run/modules/github"
 	"barista.run/modules/meminfo"
 	"barista.run/modules/netinfo"
 	"barista.run/modules/netspeed"
@@ -44,7 +43,6 @@ import (
 	"github.com/martinohmann/barista-contrib/modules/updates"
 	"github.com/martinohmann/barista-contrib/modules/updates/pacman"
 	"github.com/martinohmann/barista-contrib/modules/weather/openweathermap"
-	"github.com/martinohmann/i3-barista/internal/keyring"
 	"github.com/martinohmann/i3-barista/internal/notify"
 	psysfs "github.com/prometheus/procfs/sysfs"
 )
@@ -136,10 +134,10 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry) error{
 
 				return volume.New(pulseaudio.DefaultSink()).Output(func(v volume.Volume) bar.Output {
 					if v.Mute {
-						return outputs.Textf("婢 %d%%", v.Pct()).Color(colors.Scheme("color11"))
+						return outputs.Textf("󰝟 %d%%", v.Pct()).Color(colors.Scheme("color11"))
 					}
 
-					return outputs.Textf("墳 %d%%", v.Pct())
+					return outputs.Textf("󰕾 %d%%", v.Pct())
 				}), nil
 			}).
 			Add(
@@ -185,7 +183,7 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry) error{
 				xkbmap.New("us", "de").Output(func(layout keyboard.Layout) bar.Output {
 					return outputs.Textf("⌨ %s", strings.ToUpper(layout.Name))
 				}),
-				static.New(outputs.Text("").OnClick(click.RunLeft("dmenu_session"))),
+				static.New(outputs.Text("").OnClick(click.RunLeft("dmenu_session"))),
 			).
 			Addf(func() (bar.Module, error) {
 				replacer := strings.NewReplacer(
@@ -210,35 +208,35 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry) error{
 	},
 	"bottom": func(registry *modules.Registry) error {
 		return registry.
-			Add(
-				github.New(
-					keyring.MustGet("GITHUB_CLIENT_ID"),
-					keyring.MustGet("GITHUB_CLIENT_SECRET"),
-				).Output(func(n github.Notifications) bar.Output {
-					if n.Total() == 0 {
-						return nil
-					}
-
-					clickHandler := click.RunLeft("xdg-open", "https://github.com/notifications")
-
-					var urgent []string
-
-					for _, reason := range []string{"assign", "mention", "review_requested"} {
-						if n[reason] > 0 {
-							urgent = append(urgent, fmt.Sprintf("%d %s", n[reason], strings.ReplaceAll(reason, "_", " ")))
-						}
-					}
-
-					if len(urgent) > 0 {
-						return outputs.Textf(" %d (%s)", n.Total(), strings.Join(urgent, ", ")).
-							Urgent(true).
-							OnClick(clickHandler)
-					}
-
-					return outputs.Textf(" %d", n.Total()).
-						OnClick(clickHandler)
-				}),
-			).
+			// Add(
+			// 	github.New(
+			// 		keyring.MustGet("GITHUB_CLIENT_ID"),
+			// 		keyring.MustGet("GITHUB_CLIENT_SECRET"),
+			// 	).Output(func(n github.Notifications) bar.Output {
+			// 		if n.Total() == 0 {
+			// 			return nil
+			// 		}
+			//
+			// 		clickHandler := click.RunLeft("xdg-open", "https://github.com/notifications")
+			//
+			// 		var urgent []string
+			//
+			// 		for _, reason := range []string{"assign", "mention", "review_requested"} {
+			// 			if n[reason] > 0 {
+			// 				urgent = append(urgent, fmt.Sprintf("%d %s", n[reason], strings.ReplaceAll(reason, "_", " ")))
+			// 			}
+			// 		}
+			//
+			// 		if len(urgent) > 0 {
+			// 			return outputs.Textf(" %d (%s)", n.Total(), strings.Join(urgent, ", ")).
+			// 				Urgent(true).
+			// 				OnClick(clickHandler)
+			// 		}
+			//
+			// 		return outputs.Textf(" %d", n.Total()).
+			// 			OnClick(clickHandler)
+			// 	}),
+			// ).
 			Addf(func() (bar.Module, error) {
 				// Prefix of the interface that should be active initially.
 				activePrefix := "wlp"
@@ -278,7 +276,7 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry) error{
 					mod := mods[i].(*netspeed.Module)
 
 					mod.Output(func(s netspeed.Speeds) bar.Output {
-						out := outputs.Textf("異 %s %s   %s ", iface.Name, format.IByterate(s.Tx), format.IByterate(s.Rx)).
+						out := outputs.Textf(" %s %s   %s ", iface.Name, format.IByterate(s.Tx), format.IByterate(s.Rx)).
 							OnClick(clickHandler)
 
 						if s.Connected() {
@@ -298,12 +296,12 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry) error{
 			Add(
 				ipify.New().Output(func(i ip.Info) bar.Output {
 					if i.Connected() {
-						return outputs.Textf("爵 %s", i).Color(colors.Scheme("color5"))
+						return outputs.Textf("󰇧 %s", i).Color(colors.Scheme("color5"))
 					}
 
-					return outputs.Text("爵 offline").Color(colors.Scheme("disabled"))
+					return outputs.Text("󰇧 offline").Color(colors.Scheme("disabled"))
 				}),
-				netinfo.Prefix("tun").Output(func(s netinfo.State) bar.Output {
+				netinfo.Prefix("wg").Output(func(s netinfo.State) bar.Output {
 					if len(s.Name) == 0 {
 						return nil
 					}
@@ -338,7 +336,7 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry) error{
 						Color(colors.Scheme("color8"))
 				}),
 				sysinfo.New().Output(func(i sysinfo.Info) bar.Output {
-					return outputs.Textf("祥 up %v", format.Duration(i.Uptime)).
+					return outputs.Textf(" up %v", format.Duration(i.Uptime)).
 						Color(colors.Scheme("color9"))
 				}),
 			).
@@ -355,14 +353,14 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry) error{
 			}).
 			Add(
 				sysinfo.New().Output(func(i sysinfo.Info) bar.Output {
-					return outputs.Textf("溜 %.2f %.2f %.2f (%d)", i.Loads[0], i.Loads[1], i.Loads[2], i.Procs).
+					return outputs.Textf(" %.2f %.2f %.2f (%d)", i.Loads[0], i.Loads[1], i.Loads[2], i.Procs).
 						Color(colors.Scheme("color11"))
 				}),
 				meminfo.New().Output(func(i meminfo.Info) bar.Output {
 					used := (i["MemTotal"] - i.Available()).Gigabytes()
 					total := i["MemTotal"].Gigabytes()
 
-					return outputs.Textf(" %.1f/%.1fG", used, total).
+					return outputs.Textf(" %.1f/%.1fG", used, total).
 						Color(colors.Scheme("color12"))
 				}),
 				diskspace.New("/").Output(func(i diskspace.Info) bar.Output {
