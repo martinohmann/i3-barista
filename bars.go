@@ -167,7 +167,7 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry) error{
 						}))
 				}),
 				wlan.Any().Output(func(info wlan.Info) bar.Output {
-					onClick := click.RunLeft("urxvt", "-name", "nmtui", "-geometry", "100x40", "-e", "nmtui-connect")
+					onClick := click.RunLeft("alacritty", "--class", "Alacritty,nmtui", "-e", "nmtui-connect")
 
 					switch {
 					case !info.Enabled():
@@ -311,7 +311,7 @@ var barFactoryFuncs = map[string]func(registry *modules.Registry) error{
 					}
 
 					return outputs.Textf(" %s %v", s.Name, s.IPs[0]).
-						Color(colors.Scheme("color6"))
+						Color(colors.Scheme("warning"))
 				}),
 				netinfo.Prefix("wlp").Output(func(s netinfo.State) bar.Output {
 					if len(s.Name) == 0 {
